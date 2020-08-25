@@ -4,9 +4,25 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.EditText
 
+// 문자열이 제이슨 형태인지
+fun String?.isJsonObject():Boolean {
+    if(this?.startsWith("{") == true && this.endsWith("}")){
+        return true
+    } else {
+        return false
+    }
+}
 
+// 문자열이 제이슨 배열인지
+fun String?.isJsonArray():Boolean {
+    if(this?.startsWith("[") == true && this.endsWith("]")){
+        return true
+    } else {
+        return false
+    }
+}
 
-// 에딧 텍스트에 대한 익스텐
+// 에딧 텍스트에 대한 익스텐션
 fun EditText.onMyTextChange(completion: (Editable?) -> Unit){
     this.addTextChangedListener(object: TextWatcher {
 
