@@ -1,6 +1,10 @@
 package com.jnu.unsplash_app_tutorial.retrofit
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
+import com.jnu.unsplash_app_tutorial.App
 import com.jnu.unsplash_app_tutorial.utlis.API
 import com.jnu.unsplash_app_tutorial.utlis.Constants.TAG
 import com.jnu.unsplash_app_tutorial.utlis.isJsonArray
@@ -78,7 +82,19 @@ object RetrofitClient {
                                                     .method(originalRequest.method, originalRequest.body)
                                                     .build()
 
-                return chain.proceed(finalRequest)
+
+                val response = chain.proceed(finalRequest)
+
+                if(response.code != 200) {
+
+                    Handler(Looper.getMainLooper()).post{
+                        Toast.makeText(App.instance,"${response.code} 에러 입니다.", Toast.LENGTH_SHORT).show()
+                    }
+
+                }
+
+                return response
+
             }
 
         })
