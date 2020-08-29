@@ -4,14 +4,12 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.jnu.unsplash_app_tutorial.retrofit.RetrofitManager
 import com.jnu.unsplash_app_tutorial.utlis.Constants.TAG
-import com.jnu.unsplash_app_tutorial.utlis.RESPONSE_STATE
+import com.jnu.unsplash_app_tutorial.utlis.RESPONSE_STATUS
 import com.jnu.unsplash_app_tutorial.utlis.SERCH_TYPE
 import com.jnu.unsplash_app_tutorial.utlis.onMyTextChange
 import kotlinx.android.synthetic.main.activity_main.*
@@ -78,6 +76,9 @@ class MainActivity : AppCompatActivity() {
         btn_search.setOnClickListener {
             Log.d(TAG,"MainActivity - 검색버튼이 클릭 되었다. / currentSearchType : $currentSearchType")
 
+            // UI 처리
+            this.handleSearchButtonUi()
+
             val userSearchInput = search_term_edit_text.text.toString()
 
             // 검색 api 호출
@@ -85,7 +86,7 @@ class MainActivity : AppCompatActivity() {
                 responseState, responseDataArrayList ->
 
                 when(responseState) {
-                    RESPONSE_STATE.OKAY -> {
+                    RESPONSE_STATUS.OKAY -> {
                         Log.d(TAG,"api 호출 성공 : ${responseDataArrayList?.size}")
 
                         val intent = Intent(this, PhotoCollectionActivity::class.java)
@@ -101,14 +102,23 @@ class MainActivity : AppCompatActivity() {
                         startActivity(intent)
 
                     }
-                    RESPONSE_STATE.FAIL -> {
+                    RESPONSE_STATUS.FAIL -> {
                         Toast.makeText(this, "api 호출 에러입니다.", Toast.LENGTH_SHORT).show()
                         Log.d(TAG,"api 호출 실패 : $responseDataArrayList")
                     }
+
+                    RESPONSE_STATUS.NO_CONTENT -> {
+                        Toast.makeText(this, " 검색결과가 없습니다", Toast.LENGTH_SHORT).show()
+                    }
                 }
+
+                btn_progress.visibility = View.INVISIBLE
+                btn_search.text = "검색"
+                search_term_edit_text.setText("")
+
             })
 
-            this.handleSearchButtonUi()
+
         }
 
     }// onCreate
@@ -118,9 +128,9 @@ class MainActivity : AppCompatActivity() {
 
         btn_search.text = ""
 
-        Handler().postDelayed({
-            btn_progress.visibility = View.INVISIBLE
-            btn_search.text = "검색"
-        }, 1500)
+//        Handler().postDelayed({
+//            btn_progress.visibility = View.INVISIBLE
+//            btn_search.text = "검색"
+//        }, 1500)
     }
 }

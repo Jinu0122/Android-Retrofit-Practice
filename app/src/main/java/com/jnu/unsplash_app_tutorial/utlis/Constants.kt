@@ -8,15 +8,16 @@ enum class SERCH_TYPE {
     PHOTO, USER
 }
 
-enum class RESPONSE_STATE{
+enum class RESPONSE_STATUS{
     OKAY,
-    FAIL
+    FAIL,
+    NO_CONTENT
 }
 
 
 object  API {
     const val BASE_URL : String = "https://api.unsplash.com/"
-
+    // 우리가 받은 키값으로 해야함
     const val CLIENT_ID : String = "Twbq1_ElbuzkDQ7bluOYQP0DON9l9fU5XK2cObHnA6Y"
 
     const val SEARCH_PHOTOS : String = "search/photos"

@@ -5,7 +5,7 @@ import com.google.gson.JsonElement
 import com.jnu.unsplash_app_tutorial.model.Photo
 import com.jnu.unsplash_app_tutorial.utlis.API
 import com.jnu.unsplash_app_tutorial.utlis.Constants.TAG
-import com.jnu.unsplash_app_tutorial.utlis.RESPONSE_STATE
+import com.jnu.unsplash_app_tutorial.utlis.RESPONSE_STATUS
 import retrofit2.Call
 import retrofit2.Response
 import java.text.SimpleDateFormat
@@ -20,7 +20,7 @@ class RetrofitManager {
     private val iRetrofit : IRetrofit? = RetrofitClient.getClient(API.BASE_URL)?.create(IRetrofit::class.java)
 
     // 사진 검색 api 호출
-    fun searchPhotos(searchTerm: String?, completion: (RESPONSE_STATE, ArrayList<Photo>?) -> Unit){
+    fun searchPhotos(searchTerm: String?, completion: (RESPONSE_STATUS, ArrayList<Photo>?) -> Unit){
 
         val term = searchTerm.let{
             it
@@ -40,7 +40,7 @@ class RetrofitManager {
             override fun onFailure(call: Call<JsonElement>, t: Throwable) {
                 Log.d(TAG,"RetrofitManager - onFailure() called / t: $t")
 
-                completion(RESPONSE_STATE.FAIL, null)
+                completion(RESPONSE_STATUS.FAIL, null)
             }
 
             // 응답 성공시
@@ -62,29 +62,43 @@ class RetrofitManager {
                             
                             Log.d(TAG,"RetrofitManager - onResponse() called / total: $total")
 
-                            results.forEach { resultItem ->
-                                val resultItemObject = resultItem.asJsonObject
+                            // 데이터가 없으면 no_content 로 보낸다.
+                            if(total == 0){
+                                completion(RESPONSE_STATUS.NO_CONTENT, null)
 
-                                val user = resultItemObject.get("user").asJsonObject
-                                val userName : String = user.get("username").asString
-                                val likesCount = resultItemObject.get("likes").asInt
-                                val thumbnailLink  = resultItemObject.get("urls").asJsonObject.get("thumb").asString
-                                val createAt = resultItemObject.get("created_at").asString
+                            // 데이터가 있다면
+                            } else {
 
-                                val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-                                val formatter = SimpleDateFormat("yyyy년\nMM월 dd")
+                                results.forEach { resultItem ->
+                                    val resultItemObject = resultItem.asJsonObject
 
-                                val outputDateString = formatter.format(parser.parse(createAt))
+                                    val user = resultItemObject.get("user").asJsonObject
+                                    val userName: String = user.get("username").asString
+                                    val likesCount = resultItemObject.get("likes").asInt
+                                    val thumbnailLink =
+                                        resultItemObject.get("urls").asJsonObject.get("thumb").asString
+                                    val createAt = resultItemObject.get("created_at").asString
+
+                                    val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                                    val formatter = SimpleDateFormat("yyyy년\nMM월 dd")
+
+                                    val outputDateString = formatter.format(parser.parse(createAt))
 
 //                                Log.d(TAG,"RetrofitManager - onResponse() called / outputDateString $outputDateString ")
 
-                                val photoItem = Photo(author = userName, likesCount = likesCount, thumbnail = thumbnailLink, createAt = outputDateString )
+                                    val photoItem = Photo(
+                                        author = userName,
+                                        likesCount = likesCount,
+                                        thumbnail = thumbnailLink,
+                                        createAt = outputDateString
+                                    )
 
-                                parsedPhotoDataArray.add(photoItem)
+                                    parsedPhotoDataArray.add(photoItem)
 
+                                }
+
+                                completion(RESPONSE_STATUS.OKAY, parsedPhotoDataArray)
                             }
-
-                            completion(RESPONSE_STATE.OKAY, parsedPhotoDataArray)
 
                         }
 
